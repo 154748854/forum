@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: 论坛系统
+  output:
+    ansi:
+      enabled: always # 配置输出的效果
+
+
+server:
+  port: 58080 # 自定义的服务端口号
+
+
+logging:
+  level:
+    root: info # 日志的默认级别
+    com.example.forum: debug
+  file:
+    path: F:/log/forum # 日志的保存路径
+  pattern:
+    dateformat: MM-dd HH:mm:ss # 日期的显示格式
+
