@@ -2,6 +2,7 @@ package com.example.forum.controller;
 
 import com.example.forum.common.AppResult;
 import com.example.forum.common.ResultCode;
+import com.example.forum.config.AppConfig;
 import com.example.forum.model.User;
 import com.example.forum.services.IUserService;
 import com.example.forum.utils.MD5Util;
@@ -11,12 +12,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 // 对controller进行api说明
 @Api(tags = "用户接口")
@@ -70,5 +70,56 @@ public class UserController {
         userService.createNormalUser(user);
         // 返回成功
         return AppResult.success("用户注册成功");
+    }
+
+    /**
+     * 用户登录
+     * @param username 用户名
+     * @param password 密码
+     * @return
+     */
+    @ApiOperation("用户登录")
+    @PostMapping("/login")
+    public AppResult login(HttpServletRequest request,
+                           @ApiParam("用户名") @RequestParam("username") @NotNull String username,
+                           @ApiParam("密码") @RequestParam("password") @NotNull String password) {
+        // 1. 调用service中的login方法,返回user对象
+        User user = userService.login(username, password);
+        // 2. 登录成功,把User对象舍之道session作用域中
+        HttpSession session = request.getSession(true);
+        session.setAttribute(AppConfig.USER_SESSION, user);
+        // 3,返回结果
+        return AppResult.success();
+    }
+
+    @ApiOperation("获取用户信息")
+    @GetMapping("/ info")
+    public AppResult<User> getUserInfo (HttpServletRequest request,
+                                        @ApiParam("用户Id") @RequestParam(value = "id",required = false) Long id) {
+        User user = null;
+        // 根据入参来判断User获取方式
+        if (id == null) {
+            //1. 如果id为空(没传, 从session中获取当前登录用户的信息
+            // 不主动获取创建session
+            HttpSession session = request.getSession(false);
+            // 判断session和用户信息是够有效
+            if (session == null || session.getAttribute(AppConfig.USER_SESSION) == null) {
+                // 用户没有登录, 返回错误信息
+                return AppResult.failed(ResultCode.FAILED_FORBIDDEN);
+            }
+            // 登录了,从session中获取登录用户
+            user = (User) session.getAttribute(AppConfig.USER_SESSION);
+        }else {
+            // 2. id不为空(传过来了,根据id从数据库中查询用户
+            user = userService.selectById(id);
+        }
+
+        // 对用户的判断,用户是否为空
+        if (user == null) {
+            return AppResult.failed(ResultCode.FAILED_USER_NOT_EXISTS);
+        }
+
+        // 返回正常结果(不是直接返回User,而是同一结果返回,User作为data
+        return AppResult.success(user);
     }
 }

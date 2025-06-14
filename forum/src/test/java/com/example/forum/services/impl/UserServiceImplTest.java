@@ -32,4 +32,22 @@ class UserServiceImplTest {
         // 打印结果
         System.out.println(user);
     }
+
+    @Test
+    void selectByUserName() {
+        User user = userService.selectByUserName("bitboy1");
+        System.out.println(user);
+    }
+
+    @Test
+    void login() {
+        User u = userService.login("testUser111", "111111");
+        System.out.println(u);
+    }
+
+    @Test
+    void selectById() {
+        User user = userService.selectById(1l);
+        System.out.println(user);
+    }
 }

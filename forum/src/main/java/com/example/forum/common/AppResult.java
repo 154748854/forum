@@ -1,11 +1,16 @@
 package com.example.forum.common;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 public class AppResult<T> {
     // 状态码
+    @JsonInclude(JsonInclude.Include.ALWAYS) //无论任何情况都参与Json序列化
     private int code;
     // 描述信息
+    @JsonInclude(JsonInclude.Include.ALWAYS) //无论任何情况都参与Json序列化
     private String message;
     // 具体的数据
+    @JsonInclude(JsonInclude.Include.ALWAYS) //无论任何情况都参与Json序列化
     private T data;
 
     public AppResult(int code, String message) {
