@@ -122,4 +122,21 @@ public class UserController {
         // 返回正常结果(不是直接返回User,而是同一结果返回,User作为data
         return AppResult.success(user);
     }
+
+    @ApiOperation("退出登录")
+    @GetMapping("/logout")
+    public AppResult logout(HttpServletRequest request) {
+        // 获取session对象
+        HttpSession session = request.getSession(false);
+        // 判断session是否有效
+        if (session != null) {
+            // 打印日志
+            log.info("退出成功");
+            // 用户已登录,直接销毁session
+            session.invalidate();
+        }
+        return AppResult.success("退出成功");
+    }
+
+
 }
