@@ -102,11 +102,6 @@ public class UserController {
             //1. 如果id为空(没传, 从session中获取当前登录用户的信息
             // 不主动获取创建session
             HttpSession session = request.getSession(false);
-            // 判断session和用户信息是够有效
-            if (session == null || session.getAttribute(AppConfig.USER_SESSION) == null) {
-                // 用户没有登录, 返回错误信息
-                return AppResult.failed(ResultCode.FAILED_FORBIDDEN);
-            }
             // 登录了,从session中获取登录用户
             user = (User) session.getAttribute(AppConfig.USER_SESSION);
         }else {
