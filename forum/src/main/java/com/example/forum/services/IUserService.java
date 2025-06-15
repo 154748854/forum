@@ -33,4 +33,11 @@ public interface IUserService {
      * @return User对象
      */
     User selectById(Long id);
+
+
+    /**
+     * 为当前用户的发帖数+1
+     * @param id 用户id
+     */
+    void addOneArticleCountById(Long id);
 }

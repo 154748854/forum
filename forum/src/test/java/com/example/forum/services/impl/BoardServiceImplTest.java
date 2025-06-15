@@ -3,10 +3,9 @@ package com.example.forum.services.impl;
 import com.example.forum.services.IBoardService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class BoardServiceImplTest {
@@ -17,5 +16,12 @@ class BoardServiceImplTest {
     @Test
     void selectByNum() {
         System.out.println(boardService.selectByNum(1));
+    }
+
+    @Test
+    @Transactional
+    void addOneArticleCountById() {
+        boardService.addOneArticleCountById(1L);
+        System.out.println("更新成功");
     }
 }
