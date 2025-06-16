@@ -18,6 +18,7 @@ public class User {
 
     @JsonIgnore // 不参与Json序列化
     private String password;
+
     @ApiModelProperty("昵称")
     private String nickname;
     @ApiModelProperty("电话号码")
@@ -44,8 +45,10 @@ public class User {
 
     @ApiModelProperty("用户状态")
     private Byte state;
+
     @JsonIgnore // 不参与Json序列化
     private Byte deleteState;
+
     @ApiModelProperty("注册日期")
     private Date createTime;
 
