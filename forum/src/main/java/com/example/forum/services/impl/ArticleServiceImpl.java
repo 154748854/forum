@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -80,5 +81,33 @@ public class ArticleServiceImpl implements IArticleService {
         log.info(ResultCode.SUCCESS.toString()+"userid = "+article.getUserId()
                 +" ,boardId = "+article.getBoardId()+" 发帖成功");
 
+    }
+
+    @Override
+    public List<Article> selectAll() {
+        // 调用DAO
+        List<Article> articles = articleMapper.selectAll();
+        // 返回结果
+        return articles;
+    }
+
+    @Override
+    public List<Article> selectAllByBoardId(Long boardId) {
+        // 非空校验
+        if (boardId == null || boardId <= 0) {
+            // 打印日志
+            log.warn(ResultCode.FAILED_PARAMS_VALIDATE.toString());
+            // 抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED_PARAMS_VALIDATE));
+        }
+        // 校验板块是否存在
+        Board board = boardService.selectById(boardId);
+        if (board == null) {
+            log.warn(ResultCode.FAILED_BOARD_NOT_EXISTS.toString()+", boardId:{}", boardId);
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED_BOARD_NOT_EXISTS));
+        }
+        // 调用DAO查询
+        List<Article> articles = articleMapper.selectAllByBoardId(boardId);
+        return articles;
     }
 }
