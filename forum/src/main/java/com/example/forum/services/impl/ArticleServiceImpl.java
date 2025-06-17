@@ -110,4 +110,41 @@ public class ArticleServiceImpl implements IArticleService {
         List<Article> articles = articleMapper.selectAllByBoardId(boardId);
         return articles;
     }
+
+    @Override
+    public Article selectDetailById(Long id) {
+        // 非空校验
+        if (id == null || id < 0) {
+            // 打印日志
+            log.warn(ResultCode.FAILED_PARAMS_VALIDATE.toString());
+            // 抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED_PARAMS_VALIDATE));
+        }
+        // 调用DAO
+        Article article = articleMapper.selectDetailById(id);
+        // 判断结果是否为空
+        if (article == null) {
+            // 打印日志
+            log.warn(ResultCode.FAILED_ARTICLE_NOT_EXISTS.toString());
+            // 抛异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED_ARTICLE_NOT_EXISTS));
+        }
+
+        // 更新帖子访问次数
+        Article updateArticle = new Article();
+        updateArticle.setId(article.getId());
+        updateArticle.setVisitCount(article.getVisitCount()+1);
+        // 保存到数据库
+        int row = articleMapper.updateByPrimaryKeySelective(updateArticle);
+        if (row != 1) {
+            // 打印日志
+            log.warn(ResultCode.FAILED.toString()+", 受影响行数不等于1");
+            //抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED));
+        }
+        // 更新返回对象访问次数(因为article是在更新访问次数之前查询出来的
+        article.setVisitCount(article.getVisitCount()+1);
+        // 返回帖子
+        return article;
+    }
 }

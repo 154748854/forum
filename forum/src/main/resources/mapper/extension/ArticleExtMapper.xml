@@ -3,10 +3,12 @@
 <mapper namespace="com.example.forum.dao.ArticleMapper">
   <!-- 自定义结果集映射 要继承全列结果集,不然默认只要返回user这一个对象-->
   <resultMap id="AllInfoResultMap" type="com.example.forum.model.Article" extends="ResultMapWithBLOBs">
-  <!--  关联的用户的映射  -->
+    <!--  关联的用户的映射  -->
     <association property="user" resultMap="com.example.forum.dao.UserMapper.BaseResultMap"
-    columnPrefix="u_"/>
-
+                 columnPrefix="u_"/>
+    <!-- 关联板块的映射  -->
+    <association property="board" resultMap="com.example.forum.dao.BoardMapper.BaseResultMap"
+                 columnPrefix="b_"/>
   </resultMap>
   <!-- 查询所有未被删除的帖子,不包含content -->
   <select id="selectAll" resultMap="AllInfoResultMap">
@@ -53,5 +55,39 @@
       and a.deleteState = 0
       and a.boardId = #{boardId,jdbcType=BIGINT}
     order by a.createTime desc;
+  </select>
+
+  <select id="selectDetailById" resultMap="AllInfoResultMap">
+    select
+      u.id as u_id,
+      u.avatarUrl as u_avatarUrl,
+      u.nickname as u_nickname,
+      u.gender as u_gender,
+      u.isAdmin as u_isAdmin,
+      u.state as u_state,
+      u.deleteState as u_deleteState,
+      b.id as b_id,
+      b.name as b_id,
+      b.state as b_state,
+      b.deleteState as b_deleteState,
+      a.id,
+      a.boardId,
+      a.userId,
+      a.title,
+      a.content,
+      a.visitCount,
+      a.replyCount,
+      a.likeCount,
+      a.state,
+      a.createTime,
+      a.updateTime
+    from
+      t_article a, t_user u, t_board b
+    where
+      a.userId = u.id
+      and
+      a.boardId = b.id
+      and a.deleteState = 0
+      and a.id = #{id,jdbcType=BIGINT}
   </select>
 </mapper>

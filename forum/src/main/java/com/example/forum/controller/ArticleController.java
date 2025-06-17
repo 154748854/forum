@@ -96,6 +96,17 @@ public class ArticleController {
         return AppResult.success(articles);
     }
 
-
+    @ApiOperation("根据帖子id获取详情")
+    @GetMapping("/details")
+    public AppResult<Article> getDetails(@ApiParam("帖子id") @RequestParam("id") @NotNull Long id) {
+        // 调用Service获取帖子详情
+        Article article = articleService.selectDetailById(id);
+        // 判断结果是否为空
+        if (article == null) {
+            return AppResult.failed(ResultCode.FAILED_ARTICLE_NOT_EXISTS);
+        }
+        // 返回结果
+        return AppResult.success(article);
+    }
 
 }
