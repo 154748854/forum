@@ -189,4 +189,46 @@ public class ArticleServiceImpl implements IArticleService {
         }
 
     }
+
+    @Override
+    public void thumbsUpById(Long id) {
+        // 非空校验
+        if (id == null || id <= 0) {
+            // 打印日志
+            log.warn(ResultCode.FAILED_PARAMS_VALIDATE.toString());
+            // 抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED_PARAMS_VALIDATE));
+        }
+        // 获取帖子详情
+        Article article = articleMapper.selectByPrimaryKey(id);
+        // 帖子不存在
+        if (article == null) {
+            // 打印日志
+            log.warn(ResultCode.FAILED_ARTICLE_NOT_EXISTS.toString());
+            // 抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED_ARTICLE_NOT_EXISTS));
+        }
+        // 帖子状态异常
+        if (article.getState() == 1 || article.getDeleteState() == 1) {
+            // 打印日志
+            log.warn(ResultCode.FAILED_ARTICLE_BANNED.toString());
+            // 抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED_ARTICLE_BANNED));
+        }
+        // 构造要更新的对象
+        Article updateArticle = new Article();
+        updateArticle.setId(article.getUserId());
+        updateArticle.setLikeCount(article.getLikeCount()+1);
+        updateArticle.setUpdateTime(new Date());
+
+        // 调用DAO
+        int row = articleMapper.updateByPrimaryKeySelective(article);
+        if (row != 1) {
+            // 打印日志
+            log.warn(ResultCode.FAILED.toString()+", 受影响行数不等于1");
+            //抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED));
+        }
+        
+    }
 }
