@@ -21,7 +21,8 @@ public enum ResultCode {
     FAILED_BOARD_BANNED(1202,"板块状态异常"),
     FAILED_BOARD_NOT_EXISTS(1203,"板块不存在"),
 
-    FAILED_ARTICLE_NOT_EXISTS(1303,"帖子不存在"),
+    FAILED_ARTICLE_NOT_EXISTS(1301,"帖子不存在"),
+    FAILED_ARTICLE_BANNED(1302,"帖子状态异常"),
 
 
     FAILED_TWO_PWD_NOT_SAME(1105, "两次输入的密码不一致"),
