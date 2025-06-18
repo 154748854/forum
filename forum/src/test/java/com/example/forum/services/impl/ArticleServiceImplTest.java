@@ -77,4 +77,11 @@ class ArticleServiceImplTest {
         articleService.deleteById(6L);
         System.out.println("删除成功");
     }
+
+    @Test
+    @Transactional
+    void addOneReplyCountById() {
+        articleService.addOneReplyCountById(1L);
+        System.out.println("变更成功 ");
+    }
 }
