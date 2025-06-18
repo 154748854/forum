@@ -55,4 +55,11 @@ public interface IArticleService {
      * @param id 帖子Id
      */
     void thumbsUpById(Long id);
+
+    /**
+     * 根据id删除帖子
+     * @param id 帖子id
+     */
+    @Transactional // 事务
+    void deleteById(Long id);
 }

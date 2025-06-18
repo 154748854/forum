@@ -28,4 +28,9 @@ public interface IBoardService {
      */
     void addOneArticleCountById(Long id);
 
+    /**
+     * 板块中帖子数量 -1
+     * @param id 板块id
+     */
+    void subOneArticleCountById(Long id);
 }

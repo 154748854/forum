@@ -52,6 +52,7 @@ class ArticleServiceImplTest {
     }
 
     @Test
+    @Transactional
     void modify() {
         articleService.modify(1L,"单元测试111","测试内容111");
         System.out.println("更新成功");
@@ -61,5 +62,19 @@ class ArticleServiceImplTest {
     void selectById() throws JsonProcessingException {
         Article article = articleService.selectById(1L);
         System.out.println(objectMapper.writeValueAsString(article));
+    }
+
+    @Test
+    @Transactional
+    void thumbsUpById() {
+        articleService.thumbsUpById(6l);
+        System.out.println("点赞成功");
+    }
+
+    @Test
+    @Transactional
+    void deleteById() {
+        articleService.deleteById(6L);
+        System.out.println("删除成功");
     }
 }

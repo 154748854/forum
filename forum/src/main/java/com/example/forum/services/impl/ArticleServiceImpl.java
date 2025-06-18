@@ -202,14 +202,14 @@ public class ArticleServiceImpl implements IArticleService {
         // 获取帖子详情
         Article article = articleMapper.selectByPrimaryKey(id);
         // 帖子不存在
-        if (article == null) {
+        if (article == null || article.getDeleteState() == 1) {
             // 打印日志
             log.warn(ResultCode.FAILED_ARTICLE_NOT_EXISTS.toString());
             // 抛出异常
             throw new ApplicationException(AppResult.failed(ResultCode.FAILED_ARTICLE_NOT_EXISTS));
         }
         // 帖子状态异常
-        if (article.getState() == 1 || article.getDeleteState() == 1) {
+        if (article.getState() == 1) {
             // 打印日志
             log.warn(ResultCode.FAILED_ARTICLE_BANNED.toString());
             // 抛出异常
@@ -217,12 +217,12 @@ public class ArticleServiceImpl implements IArticleService {
         }
         // 构造要更新的对象
         Article updateArticle = new Article();
-        updateArticle.setId(article.getUserId());
+        updateArticle.setId(article.getId());
         updateArticle.setLikeCount(article.getLikeCount()+1);
         updateArticle.setUpdateTime(new Date());
 
         // 调用DAO
-        int row = articleMapper.updateByPrimaryKeySelective(article);
+        int row = articleMapper.updateByPrimaryKeySelective(updateArticle);
         if (row != 1) {
             // 打印日志
             log.warn(ResultCode.FAILED.toString()+", 受影响行数不等于1");
@@ -230,5 +230,41 @@ public class ArticleServiceImpl implements IArticleService {
             throw new ApplicationException(AppResult.failed(ResultCode.FAILED));
         }
         
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        // 非空校验
+        if (id == null || id <= 0) {
+            // 打印日志
+            log.warn(ResultCode.FAILED_PARAMS_VALIDATE.toString());
+            // 抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED_PARAMS_VALIDATE));
+        }
+        // 根据id查询帖子详情
+        Article article = articleMapper.selectByPrimaryKey(id);
+        if (article == null || article.getDeleteState() == 1) {
+            // 打印日志
+            log.warn(ResultCode.FAILED_ARTICLE_NOT_EXISTS.toString());
+            // 抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED_ARTICLE_NOT_EXISTS));
+        }
+        // 构造一个更新对象
+        Article updateArticle = new Article();
+        updateArticle.setId(article.getId());
+        updateArticle.setDeleteState((byte) 1);
+        // 调用DAO
+        int row = articleMapper.updateByPrimaryKeySelective(updateArticle);
+        if (row != 1) {
+            // 打印日志
+            log.warn(ResultCode.FAILED.toString()+", 受影响行数不等于1");
+            //抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED));
+        }
+        // 更新板块中的帖子数量
+        boardService.subOneArticleCountById(article.getBoardId());
+        // 更新用户发帖数
+        userService.subOneArticleCountById(article.getUserId());
+        log.info("删除帖子成功,article id: "+article.getId()+", user id: "+article.getUserId());
     }
 }

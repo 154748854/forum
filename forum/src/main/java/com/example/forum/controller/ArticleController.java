@@ -162,4 +162,51 @@ public class ArticleController {
         return AppResult.success();
     }
 
+    @ApiOperation("点赞")
+    @PostMapping("thumbsUp")
+    public AppResult thumbsUp(HttpServletRequest request,
+                              @ApiParam("帖子Id") @RequestParam("id") @NotNull Long id) {
+        // 校验用户状态
+        HttpSession session = request.getSession(false);
+        User user = (User) session.getAttribute(AppConfig.USER_SESSION);
+        // 判断用户是否被禁言
+        if (user.getState() == 1) {
+            return AppResult.failed(ResultCode.FAILED_USER_BANNED);
+        }
+        // 调用Service
+        articleService.thumbsUpById(id);
+        // 返回结果
+        return AppResult.success();
+    }
+
+
+    @ApiOperation("删除帖子")
+    @PostMapping("/delete")
+    public AppResult deleteById(HttpServletRequest request,
+                                @ApiParam("帖子id") @RequestParam("id") @NotNull Long id) {
+        // 校验用户状态
+        HttpSession session = request.getSession(false);
+        User user = (User) session.getAttribute(AppConfig.USER_SESSION);
+        if (user.getState() == 1) {
+            // 用户已禁言
+            return AppResult.failed(ResultCode.FAILED_USER_BANNED);
+        }
+        // 查询帖子详情
+        Article article = articleService.selectById(id);
+        // 校验帖子状态
+        if (article == null || article.getDeleteState() == 1) {
+            // 帖子已删除
+            return AppResult.failed(ResultCode.FAILED_ARTICLE_NOT_EXISTS);
+        }
+
+        // 校验当前登录的用户是不是作者
+        if (user.getId() != article.getUserId()) {
+            return AppResult.failed(ResultCode.FAILED_FORBIDDEN);
+        }
+        // 调用service
+        articleService.deleteById(id);
+        // 返回操作成功
+        return AppResult.success();
+    }
+
 }

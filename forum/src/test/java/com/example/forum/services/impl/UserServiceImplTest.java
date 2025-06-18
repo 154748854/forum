@@ -15,6 +15,7 @@ class UserServiceImplTest {
     @Resource
     private IUserService userService;
     @Test
+    @Transactional
     void createNormalUser() {
         User user = new User();
         user.setUsername("boy");
@@ -57,5 +58,11 @@ class UserServiceImplTest {
     void addOneArticleCountById() {
         userService.addOneArticleCountById(1L);
         System.out.println("更新成功");
+    }
+
+    @Test
+    @Transactional
+    void subOneArticleCountById() {
+        userService.subOneArticleCountById(6l);
     }
 }

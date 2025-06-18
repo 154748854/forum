@@ -162,4 +162,41 @@ public class UserServiceImpl implements IUserService {
             throw new ApplicationException(AppResult.failed(ResultCode.FAILED));
         }
     }
+
+    @Override
+    public void subOneArticleCountById(Long id) {
+        // 非空校验
+        if (id == null || id <= 0) {
+            // 打印日志
+            log.warn(ResultCode.FAILED_PARAMS_VALIDATE.toString());
+            // 抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED_PARAMS_VALIDATE));
+        }
+        // 查询用户信息
+        User user = userMapper.selectByPrimaryKey(id);
+        if (user == null) {
+            // 打印日志
+            log.warn(ResultCode.ERROR_IS_NULL.toString()+", user id = "+id);
+            //抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.ERROR_IS_NULL));
+        }
+        // 更新用户发帖数量
+        User updateUser = new User();
+        updateUser.setId(user.getId());
+        updateUser.setArticleCount(user.getArticleCount()-1);
+        // 判断减一之后是否小于零
+        if (updateUser.getArticleCount() < 0) {
+            // 若小于零,设为零
+            updateUser.setArticleCount(0);
+        }
+        // 调用DAO执行更新
+        int row = userMapper.updateByPrimaryKeySelective(updateUser);
+        //判断受影响行数
+        if (row != 1) {
+            // 打印日志
+            log.warn(ResultCode.FAILED.toString()+", 受影响行数不等于1");
+            //抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED));
+        }
+    }
 }
