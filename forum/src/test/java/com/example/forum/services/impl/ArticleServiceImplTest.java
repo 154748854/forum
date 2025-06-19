@@ -84,4 +84,10 @@ class ArticleServiceImplTest {
         articleService.addOneReplyCountById(1L);
         System.out.println("变更成功 ");
     }
+
+    @Test
+    void selectByUserId() throws JsonProcessingException {
+        List<Article> articles = articleService.selectByUserId(1L);
+        System.out.println(objectMapper.writeValueAsString(articles));
+    }
 }

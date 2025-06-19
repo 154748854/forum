@@ -69,4 +69,12 @@ public interface IArticleService {
      * @param id 帖子id
      */
     void addOneReplyCountById(Long id);
+
+
+    /**
+     * 根据用户id查询帖子列表
+     * @param userId 用户id
+     * @return 帖子列表
+     */
+    List<Article> selectByUserId(Long userId);
 }

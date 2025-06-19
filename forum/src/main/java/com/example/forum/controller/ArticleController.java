@@ -209,4 +209,20 @@ public class ArticleController {
         return AppResult.success();
     }
 
+    @ApiOperation("获取用户的帖子列表")
+    @GetMapping("/getAllByUserId")
+    public AppResult<List<Article>> getAllByUserId(HttpServletRequest request,
+                                    @ApiParam("用户id") @RequestParam(value = "userId",required = false) Long userId) {
+        // 如果userID为空,从session中获取登录对象
+        if (userId == null) {
+            HttpSession session = request.getSession(false);
+            User user = (User) session.getAttribute(AppConfig.USER_SESSION);
+            userId = user.getId();
+        }
+        // 调用service
+        List<Article> articles = articleService.selectByUserId(userId);
+        // 返回结果
+        return AppResult.success(articles);
+    }
+
 }
