@@ -8,6 +8,7 @@ import com.example.forum.model.User;
 import com.example.forum.services.IUserService;
 import com.example.forum.utils.MD5Util;
 import com.example.forum.utils.StringUtil;
+import com.example.forum.utils.UUIDUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -199,4 +200,161 @@ public class UserServiceImpl implements IUserService {
             throw new ApplicationException(AppResult.failed(ResultCode.FAILED));
         }
     }
+
+    @Override
+    public void modifyInfo(User user) {
+        // 非空校验
+        if (user == null || user.getId() == null || user.getId() <= 0) {
+            // 打印日志
+            log.warn(ResultCode.FAILED_PARAMS_VALIDATE.toString());
+            // 抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED_PARAMS_VALIDATE));
+        }
+        // 校验用户是否存在
+        User existsUser = userMapper.selectByPrimaryKey(user.getId());
+        if (existsUser == null) {
+            // 打印日志
+            log.warn(ResultCode.FAILED_USER_NOT_EXISTS.toString());
+            // 抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED_USER_NOT_EXISTS));
+        }
+
+        // 3. 定义一个标志位
+        boolean checkAttr = false; // false表示没有校验通过
+
+        // 定义一个用来更新的对象,防止用户传出的User对象设置其他属
+        User updateUser = new User();
+        updateUser.setId(user.getId());
+        // 对每一个参数进行校验并赋值
+        // 校验用户名
+        if (!StringUtil.isEmpty(user.getUsername())
+                && !existsUser.getUsername().equals(user.getUsername())) {
+            // 对想更新的用户名进行唯一性校验(用户名不能重复
+            User checkUser = userMapper.selectByUserName(user.getUsername());
+            if (checkUser != null) {
+                // 用户已存在
+                log.warn(ResultCode.FAILED_USER_EXISTS.toString());
+                // 抛出异常
+                throw new ApplicationException(AppResult.failed(ResultCode.FAILED_USER_EXISTS));
+            }
+            // 数据库中没有找到相应的用户,表示可以修改用户名
+            updateUser.setUsername(user.getUsername());
+            // 更新标志位
+            checkAttr = true;
+        }
+
+        // 校验昵称
+        if (!StringUtil.isEmpty(user.getNickname())
+                && !user.getNickname().equals(existsUser.getNickname())) {
+            // 设置昵称
+            updateUser.setNickname(user.getNickname());
+            // 更新标志位
+            checkAttr = true;
+        }
+
+        // 校验性别
+        if (user.getGender() != null && user.getGender() != existsUser.getGender()) {
+            // 设置性别
+            updateUser.setGender(user.getGender());
+            // 合法性校验
+            if (updateUser.getGender() > 2 || updateUser.getGender() < 0) {
+                updateUser.setGender((byte) 2);
+            }
+            // 更新标志位
+            checkAttr = true;
+        }
+        // 校验邮箱
+        if (!StringUtil.isEmpty(user.getEmail())
+                && !user.getEmail().equals(existsUser.getEmail())) {
+            // 设置邮箱
+            updateUser.setEmail(user.getEmail());
+            // 更新标志位
+            checkAttr = true;
+        }
+        // 校验电话号码
+        if (!StringUtil.isEmpty(user.getPhoneNum())
+                && !user.getPhoneNum().equals(existsUser.getPhoneNum())) {
+            // 设置电话号码
+            updateUser.setPhoneNum(user.getPhoneNum());
+            // 更新标志位
+            checkAttr = true;
+        }
+        // 校验个人简介
+        if (!StringUtil.isEmpty(user.getRemark())
+                && !user.getRemark().equals(existsUser.getRemark())) {
+            // 设置个人简介
+            updateUser.setRemark(user.getRemark());
+            // 更新标志位
+            checkAttr = true;
+        }
+        if (checkAttr == false) {
+            // 打印日志
+            log.warn(ResultCode.FAILED_PARAMS_VALIDATE.toString());
+            // 抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED_PARAMS_VALIDATE));
+        }
+        // 执行sql
+        int row = userMapper.updateByPrimaryKeySelective(updateUser);
+        //判断受影响行数
+        if (row != 1) {
+            // 打印日志
+            log.warn(ResultCode.FAILED.toString()+", 受影响行数不等于1");
+            //抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED));
+        }
+
+    }
+
+    @Override
+    public void modifyPassword(Long id, String newPassword, String oldPassword) {
+        // 非空校验
+        if (id == null || id <= 0 || StringUtil.isEmpty(newPassword) || StringUtil.isEmpty(oldPassword)) {
+            // 打印日志
+            log.warn(ResultCode.FAILED_PARAMS_VALIDATE.toString());
+            // 抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED_PARAMS_VALIDATE));
+        }
+        // 查询用户信息
+        User user = userMapper.selectByPrimaryKey(id);
+        // 校验用户是否存在
+        if (user == null || user.getDeleteState() == 1) {
+            // 打印日志
+            log.warn(ResultCode.FAILED_USER_NOT_EXISTS.toString());
+            // 抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED_USER_NOT_EXISTS));
+        }
+        // 校验老密码是否正确
+        // 先对输入老密码(明文)进行加密
+        String oldEncryptPassword = MD5Util.md5Salt(oldPassword, user.getSalt());
+        // 与用户当前密码进行比较
+        if (!oldEncryptPassword.equalsIgnoreCase(user.getPassword())) {
+            // 打印日志
+            log.warn(ResultCode.FAILED.toString());
+            // 抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED));
+        }
+
+        // 生成一个新的盐值
+        String salt = UUIDUtil.UUID_32();
+        // 生成新密码的密文
+        String encryptPassword = MD5Util.md5Salt(newPassword,salt);
+
+        // 生成更新对象
+        User updateUser = new User();
+        updateUser.setId(user.getId());
+        updateUser.setPassword(encryptPassword);
+        updateUser.setSalt(salt);
+        updateUser.setUpdateTime(new Date());
+        // 设置数据库
+        int row = userMapper.updateByPrimaryKeySelective(updateUser);
+        if (row != 1) {
+            // 打印日志
+            log.warn(ResultCode.FAILED.toString()+", 受影响行数不等于1");
+            //抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED));
+        }
+
+    }
+
+
 }

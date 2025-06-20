@@ -65,4 +65,25 @@ class UserServiceImplTest {
     void subOneArticleCountById() {
         userService.subOneArticleCountById(6l);
     }
+
+    @Test
+    @Transactional
+    void modifyInfo() {
+        User user = new User();
+        user.setId(1L);
+        user.setUsername("boy111");
+        user.setNickname("boy111");
+        user.setGender((byte) 0);
+        user.setEmail("qq.@qq.com");
+        user.setPhoneNum("12345678907");
+        user.setRemark("测试");
+        userService.modifyInfo(user);
+    }
+
+    @Test
+    @Transactional
+    void modifyPassword() {
+        userService.modifyPassword(7L,"123456","111111");
+        System.out.println("修改成功");
+    }
 }
