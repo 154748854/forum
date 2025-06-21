@@ -78,6 +78,18 @@ public class MessageServiceImpl implements IMessageService {
     }
 
     @Override
+    public Message selectById(Long id) {
+        if (id == null || id <= 0) {
+            // 打印日志
+            log.warn(ResultCode.FAILED_PARAMS_VALIDATE.toString());
+            // 抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED_PARAMS_VALIDATE));
+        }
+        Message message = messageMapper.selectByPrimaryKey(id);
+        return message;
+    }
+
+    @Override
     public List<Message> selectByReceiveUserId(Long receiveUserId) {
         // 非空校验
         if (receiveUserId == null || receiveUserId <= 0) {
@@ -114,5 +126,28 @@ public class MessageServiceImpl implements IMessageService {
             //抛出异常
             throw new ApplicationException(AppResult.failed(ResultCode.FAILED));
         }
+    }
+
+    @Override
+    public void reply(Long repliedId, Message message) {
+        // 非空校验
+        if (repliedId == null || repliedId <= 0) {
+            // 打印日志
+            log.warn(ResultCode.FAILED_PARAMS_VALIDATE.toString());
+            // 抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED_PARAMS_VALIDATE));
+        }
+        // 校验repliedId对应站内信是否存在
+        Message existsMessage = messageMapper.selectByPrimaryKey(repliedId);
+        if (existsMessage == null || existsMessage.getDeleteState() == 1) {
+            // 打印日志
+            log.warn(ResultCode.FAILED_MESSAGE_NOT_EXISTS.toString());
+            // 抛出异常
+            throw new ApplicationException(AppResult.failed(ResultCode.FAILED_MESSAGE_NOT_EXISTS));
+        }
+        // 更新状态为已回复
+        updateStateById(repliedId, (byte) 2);
+        // 回复内容写入数据库
+        create(message);
     }
 }

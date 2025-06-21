@@ -86,4 +86,70 @@ public class MessageController {
         // 返回结果
         return AppResult.success(messages);
     }
+
+
+    @ApiOperation("更新为已读")
+    @PostMapping("/markRead")
+    public AppResult markRead(HttpServletRequest request,
+                              @ApiParam("站内信id") @RequestParam("id") @NotNull Long id) {
+        // 根据id查询站内信
+        Message message = messageService.selectById(id);
+        // 站内信是否存在
+        if (message == null || message.getDeleteState() == 1) {
+            // 站内信不存在
+            return AppResult.failed(ResultCode.FAILED_MESSAGE_NOT_EXISTS);
+        }
+        // 站内信是不是自己的
+        HttpSession session = request.getSession(false);
+        User user = (User) session.getAttribute(AppConfig.USER_SESSION);
+        if (message.getReceiveUserId() != user.getId()) {
+            // 给自己发了消息
+            return AppResult.failed(ResultCode.FAILED_FORBIDDEN);
+        }
+        // 调用service,将状态更新为已读
+        messageService.updateStateById(id, (byte) 1);
+        // 返回结果
+        return AppResult.success();
+
+    }
+
+    /**
+     * 回复站内信
+     * @param repliedId 要回复的站内信id
+     * @param content 站内信的内容
+     * @return AppResult
+     */
+    @ApiOperation("回复站内信")
+    @PostMapping("/reply")
+    public AppResult reply(HttpServletRequest request,
+                           @ApiParam("要回复的站内信id") @RequestParam("repliedId") @NotNull Long repliedId,
+                           @ApiParam("站内信的内容") @RequestParam("content") @NotNull String content) {
+        // 校验当前登录用户状态
+        HttpSession session = request.getSession(false);
+        User user = (User) session.getAttribute(AppConfig.USER_SESSION);
+        if (user.getState() == 1) {
+            return AppResult.failed(ResultCode.FAILED_USER_BANNED);
+        }
+
+        // 校验要回复的站内信状态
+        Message existsMessage = messageService.selectById(repliedId);
+        if (existsMessage == null || existsMessage.getDeleteState() == 1) {
+            // 返回错误描述
+            return AppResult.failed(ResultCode.FAILED_MESSAGE_NOT_EXISTS);
+        }
+        // 不能给自己回复
+        if (user.getId() == existsMessage.getPostUserId()) {
+            // 返回错误描述
+            return AppResult.failed("不能回复自己的站内信");
+        }
+        // 从request获取登录postId,从repliedId获取receiveUserId与content构造message对象
+        Message message = new Message();
+        message.setPostUserId(user.getId());
+        message.setReceiveUserId(existsMessage.getPostUserId());
+        message.setContent(content);
+        // 调用service
+        messageService.reply(repliedId,message);
+        // 返回结果
+        return AppResult.success();
+    }
 }

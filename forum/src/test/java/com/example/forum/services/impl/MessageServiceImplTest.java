@@ -9,10 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 class MessageServiceImplTest {
@@ -55,5 +52,22 @@ class MessageServiceImplTest {
     void updateStateById() {
         messageService.updateStateById(1L, (byte) 2);
         System.out.println("更新成功");
+    }
+
+    @Test
+    void selectById() throws JsonProcessingException {
+        Message message = messageService.selectById(1l);
+        System.out.println(objectMapper.writeValueAsString(message));
+    }
+
+    @Test
+    void reply() {
+        Message message = new Message();
+        message.setPostUserId(3L);
+        message.setContent("你只是个单元测试对象");
+        message.setReceiveUserId(2L);
+        // 调用service
+        messageService.reply(1l,message);
+        System.out.println("回复成功");
     }
 }
