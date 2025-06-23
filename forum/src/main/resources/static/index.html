@@ -97,7 +97,7 @@
               aria-label="Open user menu">
               <!-- 用户头像，也可以用img标签 -->
               <span id="index_nav_avatar" class="avatar avatar-sm"
-                style="background-image: url(./image/avatar01.jpeg)"></span>
+                style="background-image: url(./image/avatar_Default.jpeg)"></span>
               <div class="d-none d-xl-block ps-2">
                 <!-- 用户名 -->
                 <div id="index_nav_nickname"></div>
@@ -346,14 +346,14 @@
         }
       },
       // 失败回调
-      error : function () {
-        // 提示信息
-        $.toast({
-            heading: '错误',
-            text: '访问出现问题，请与管理员联系.',
-            icon: 'error'
-        });
-      }
+      // error : function () {
+      //   // 提示信息
+      //   $.toast({
+      //       heading: '错误',
+      //       text: '访问出现问题，请与管理员联系.',
+      //       icon: 'error'
+      //   });
+      // }
     });
 
     // ========================= 获取版块信息 =======================

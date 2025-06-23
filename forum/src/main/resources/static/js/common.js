@@ -1,5 +1,5 @@
 // =================== 定义全局变量 ======================
-let avatarUrl = 'image/avatar01.jpeg'; // 默认头像
+let avatarUrl = 'image/avatar_Default.jpeg'; // 默认头像
 let currentArticle; // 当前访问的帖子
 let currentUserId;  // 当前登录用户
 let profileUserId;  // 查看个人信息

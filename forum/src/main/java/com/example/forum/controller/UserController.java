@@ -86,6 +86,12 @@ public class UserController {
                            @ApiParam("密码") @RequestParam("password") @NotNull String password) {
         // 1. 调用service中的login方法,返回user对象
         User user = userService.login(username, password);
+        if (user == null) {
+            // 打印日志
+            log.warn(ResultCode.FAILED_LOGIN.toString());
+            // 返回结果
+            return AppResult.failed(ResultCode.FAILED_LOGIN);
+        }
         // 2. 登录成功,把User对象舍之道session作用域中
         HttpSession session = request.getSession(true);
         session.setAttribute(AppConfig.USER_SESSION, user);
