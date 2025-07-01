@@ -21,12 +21,16 @@ public class User {
 
     @ApiModelProperty("昵称")
     private String nickname;
+
     @ApiModelProperty("电话号码")
     private String phoneNum;
+
     @ApiModelProperty("邮箱")
     private String email;
+
     @ApiModelProperty("性别")
     private Byte gender;
+    
     @JsonIgnore // 不参与Json序列化
     private String salt;
 
